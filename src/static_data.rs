@@ -1,4 +1,4 @@
-pub static main_cpp: &str = "
+pub static MAIN_CPP: &str = "
 #include \"Engine.hpp\"
 #include <chrono>
 #include <glad/glad.h>
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 }
 ";
 
-pub static cmake_file_content: &str = "
+pub static CMAKE_FILE_CONTENT: &str = "
 cmake_minimum_required(VERSION 3.14)
 
 project(#PROJECT_NAME#)
@@ -71,7 +71,7 @@ message(${CMAKE_CURRENT_SOURCE_DIR}/assets)
 
 ";
 
-pub static load_model_header: &str = "
+pub static LOAD_MODEL_HEADER: &str = "
 #ifndef PLAYGROUND_MODEL_ACTOR_H
 #define PLAYGROUND_MODEL_ACTOR_H
 
@@ -100,7 +100,7 @@ class WAction : public SHM::Command {
 #endif // PLAYGROUND_MODEL_ACTOR_H
 ";
 
-pub static load_model_source: &str = "
+pub static LOAD_MODEL_SOURCE: &str = "
 #include \"firstmodel.hpp\"
 
 GameModel::GameModel() {
@@ -149,7 +149,7 @@ void GameModel::jump() {
 }
 ";
 
-pub static shm_minimal_setting: &str = "
+pub static SHM_MINIMUM_SETTING: &str = "
 #include \"Engine.hpp\"
 #include \"Light.hpp\"
 #include \"buffers.hpp\"

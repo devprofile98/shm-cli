@@ -156,7 +156,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "shm-cli"
+name = "shm"
 version = "0.1.0"
 dependencies = [
  "clap",

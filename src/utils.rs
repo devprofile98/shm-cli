@@ -1,15 +1,16 @@
 pub mod utility {
 
     use crate::static_data::{
-        cmake_file_content, load_model_header, load_model_source, main_cpp, shm_minimal_setting,
+        CMAKE_FILE_CONTENT, LOAD_MODEL_HEADER, LOAD_MODEL_SOURCE, MAIN_CPP, SHM_MINIMUM_SETTING,
     };
     use std::fs::{create_dir, File};
     use std::io::prelude::*;
+    use std::process::Command;
 
     pub fn create_new_project(name: &str, api: &str) -> bool {
         if let Ok(mut file) = File::create("CMakeLists.txt") {
             file.write(
-                cmake_file_content
+                CMAKE_FILE_CONTENT
                     .replace("#PROJECT_NAME#", name)
                     .as_bytes(),
             )
@@ -24,34 +25,62 @@ pub mod utility {
                 return false;
             }
         }
-        if let Ok(mut file) = File::create("sources/main.cpp") {
-            file.write(main_cpp.replace("#PROJECT_NAME#", &name).as_bytes())
-                .expect("Failed to generate main.cpp file");
-        } else {
-            println!("Failed to generate  main.cpp file");
+        let files_to_create = [
+            MAIN_CPP,
+            LOAD_MODEL_HEADER,
+            LOAD_MODEL_SOURCE,
+            SHM_MINIMUM_SETTING,
+        ];
+        for f in files_to_create {
+            if let Ok(mut file) = File::create("sources/main.cpp") {
+                file.write(f.replace("#PROJECT_NAME#", &name).as_bytes())
+                    .expect("Failed to generate project files");
+            } else {
+                println!("Failed to generate project files!");
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn check_for_engine_library() -> bool {
+        if let Ok(ldconfig_cache) = Command::new("/sbin/ldconfig").arg("-p").output() {
+            if ldconfig_cache.status.success() {
+                let cmd_output = String::from_utf8(ldconfig_cache.stdout)
+                    .expect("Failed in checking for SHM library existance!");
+                if cmd_output.contains("libshm-engine.so") {
+                    return true;
+                } else {
+                    println!("Cannot open /sbin/ldconfig -p {}", cmd_output);
+                    return false;
+                }
+            } else {
+                println!("Cannot check for library, failed to open `ldconfig`");
+                return false;
+            }
+        }
+        false
+    }
+
+    pub fn build_project() -> bool {
+        if !check_for_engine_library() {
             return false;
         }
-        if let Ok(mut file) = File::create("sources/firstmodel.cpp") {
-            file.write(load_model_source.as_bytes())
-                .expect("Failed to write into firstmodel.cpp file");
-        } else {
-            println!("Failed to generate  main.cpp file");
-            return false;
-        }
-        if let Ok(mut file) = File::create("includes/firstmodel.hpp") {
-            file.write(load_model_header.as_bytes())
-                .expect("Failed to write into firstmodel.hpp file");
-        } else {
-            println!("Failed to generate  firstmodel.hpp file");
-            return false;
-        }
-        if let Ok(mut file) = File::create("sources/game.cpp") {
-            file.write(shm_minimal_setting.as_bytes())
-                .expect("Failed to write into game.cpp file");
-        } else {
-            println!("Failed to generate  game.cpp file");
-            return false;
-        }
+        // change directory to build
+        // run cmake ..
+        Command::new("cmake")
+            .arg("..")
+            .current_dir("build/")
+            .output()
+            .expect("Failed to build the project!");
+
+        // run cmake --build
+        Command::new("cmake")
+            .args(["--build", "."])
+            .current_dir("build/")
+            .output()
+            .expect("Failed to build the project!");
+        println!("Building the project compeleted");
         true
     }
 }
