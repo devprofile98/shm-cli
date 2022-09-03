@@ -9,4 +9,4 @@ with the default **rust** setup, you should be able to build the project from so
 > cargo build --release
 
 ### or
-you can download it from repository Release section
+You can download it from repository Release section
